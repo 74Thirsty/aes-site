@@ -804,23 +804,19 @@
     .book-cover {
       height: 160px;
       border-radius: var(--radius-sm);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      font-size: 1.2rem;
-      letter-spacing: 0.2em;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.08));
+      overflow: hidden;
+      position: relative;
       border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 18px 36px rgba(8, 16, 40, 0.4);
+      background: radial-gradient(140px circle at 12% 16%, rgba(56, 189, 248, 0.18), transparent 70%);
     }
 
-    .book-cover.alt {
-      background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(15, 118, 110, 0.1));
-      border-color: rgba(52, 211, 153, 0.35);
-    }
-
-    .book-cover.accent {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.28), rgba(217, 119, 6, 0.12));
-      border-color: rgba(249, 115, 22, 0.38);
+    .book-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(1.05);
     }
 
     .book-body {
@@ -1223,7 +1219,7 @@
         <a href="wizard/index.html">Smart Contract Wizard</a>
       </div>
     </div>
-    <a href="#modules">AES Modules</a>
+    <a href="#projects">Projects</a>
     <a href="#books">Books</a>
     <a href="#services">Services</a>
     <a href="#assistant">AI Assistant</a>
@@ -1372,65 +1368,79 @@
       </div>
     </header>
     <main class="site-main">
-  <section id="modules" class="section">
+  <section id="projects" class="section">
     <div class="section-heading">
-      <span class="eyebrow">Core AES Components</span>
-      <h2>Arbitrage Execution System Modules</h2>
-      <p>Each AES module powers autonomous arbitrage: discovery, validation, execution, and control.</p>
+      <span class="eyebrow">Open source</span>
+      <h2>Featured GitHub projects powering AES workflows</h2>
+      <p>These repositories inform our arbitrage research, infrastructure orchestration, and Safe-native execution.</p>
     </div>
     <div class="cards-grid">
       <article class="card project-card">
         <div class="project-meta">
-          <span class="badge success">Live</span>
-          <span>2025</span>
+          <span class="badge success">GitHub</span>
+          <span>flashbots/simple-arbitrage</span>
         </div>
-        <h3>GraphManager</h3>
-        <p>Builds and sanitizes token graphs with 2,300+ edges for arbitrage path discovery.</p>
+        <h3>Flashbots Simple Arbitrage</h3>
+        <p>Reference searcher that demonstrates how to simulate and send profitable MEV bundles using the Flashbots relay.</p>
+        <div class="tag-list">
+          <span class="tag">TypeScript</span>
+          <span class="tag">Flashbots</span>
+          <span class="tag">Simulation</span>
+        </div>
+        <div class="card-actions">
+          <a class="button outline" href="https://github.com/flashbots/simple-arbitrage" target="_blank" rel="noopener">View repository</a>
+        </div>
       </article>
 
       <article class="card project-card">
         <div class="project-meta">
-          <span class="badge success">Live</span>
-          <span>2025</span>
+          <span class="badge success">GitHub</span>
+          <span>safe-global/safe-contracts</span>
         </div>
-        <h3>LoanManager</h3>
-        <p>Aggregates flashloan providers and enforces canonical loan schema compliance.</p>
+        <h3>Safe Contracts</h3>
+        <p>Battle-tested account abstraction contracts and tooling that we extend for secure multi-sig arbitrage execution.</p>
+        <div class="tag-list">
+          <span class="tag">Solidity</span>
+          <span class="tag">Account Abstraction</span>
+          <span class="tag">Audited</span>
+        </div>
+        <div class="card-actions">
+          <a class="button outline" href="https://github.com/safe-global/safe-contracts" target="_blank" rel="noopener">View repository</a>
+        </div>
       </article>
 
       <article class="card project-card">
         <div class="project-meta">
-          <span class="badge accent">Beta</span>
-          <span>2025</span>
+          <span class="badge success">GitHub</span>
+          <span>Uniswap/v3-sdk</span>
         </div>
-        <h3>ArbitrageManager</h3>
-        <p>Orchestrates pathfinding (RPZE + Bellman-Ford) with ML-based profit scoring and validation.</p>
+        <h3>Uniswap V3 SDK</h3>
+        <p>Liquidity math and routing utilities that inform AES quote normalization across concentrated AMMs.</p>
+        <div class="tag-list">
+          <span class="tag">TypeScript</span>
+          <span class="tag">Routing</span>
+          <span class="tag">DeFi</span>
+        </div>
+        <div class="card-actions">
+          <a class="button outline" href="https://github.com/Uniswap/v3-sdk" target="_blank" rel="noopener">View repository</a>
+        </div>
       </article>
 
       <article class="card project-card">
         <div class="project-meta">
-          <span class="badge">QA</span>
-          <span>2025</span>
+          <span class="badge success">GitHub</span>
+          <span>blocknative/mempool-explorer</span>
         </div>
-        <h3>ExecutionManager</h3>
-        <p>Bundles execution steps, wraps them in Safe transactions, and submits via Flashbots.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge">Studio Lab</span>
-          <span>2025</span>
+        <h3>Blocknative Mempool Explorer</h3>
+        <p>Open telemetry and monitoring stack for Ethereum transactions that we reference for pre-trade insight.</p>
+        <div class="tag-list">
+          <span class="tag">Monitoring</span>
+          <span class="tag">Telemetry</span>
+          <span class="tag">Ethereum</span>
         </div>
-        <h3>WalletManager</h3>
-        <p>Rotates Safe owners, manages signers, and validates balances in real time.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge accent">Coming soon</span>
-          <span>2025</span>
+        <div class="card-actions">
+          <a class="button outline" href="https://github.com/blocknative/mempool-explorer" target="_blank" rel="noopener">View repository</a>
         </div>
-        <h3>ContractManager</h3>
-        <p>Builds and validates Safe-wrapped transaction payloads, including profit sweeps.</p>
       </article>
     </div>
   </section>
@@ -1444,25 +1454,31 @@
         </div>
         <div class="cards-grid books-grid">
           <article class="card book-card">
-            <div class="book-cover">CA</div>
+            <div class="book-cover">
+              <img src="assets/01.png" alt="Cover of The Crypto Almanac" />
+            </div>
             <div class="book-body">
               <h3>The Crypto Almanac</h3>
               <p>A definitive annual reference on crypto markets and DeFi systems.</p>
             </div>
           </article>
-          
-    <article class="card book-card">
-      <a href="https://books.apple.com/us/book/reactive-profit-zone-expansion/id6749500245" target="_blank" rel="noopener">
-        <div class="book-cover">RP</div>
-        <div class="book-body">
-          <h3>Reactive Profit Zone Expansion</h3>
-          <p>The definitive deep dive into AES’s ML-driven pathfinding engine, combining RPZE with Bellman-Ford for scalable arbitrage discovery.</p>
-        </div>
-      </a>
-    </article>
 
           <article class="card book-card">
-            <div class="book-cover alt">DL</div>
+            <a href="https://books.apple.com/us/book/reactive-profit-zone-expansion/id6749500245" target="_blank" rel="noopener">
+              <div class="book-cover">
+                <img src="assets/02.png" alt="Cover of Reactive Profit Zone Expansion" />
+              </div>
+              <div class="book-body">
+                <h3>Reactive Profit Zone Expansion</h3>
+                <p>The definitive deep dive into AES’s ML-driven pathfinding engine, combining RPZE with Bellman-Ford for scalable arbitrage discovery.</p>
+              </div>
+            </a>
+          </article>
+
+          <article class="card book-card">
+            <div class="book-cover">
+              <img src="assets/03.png" alt="Cover of Designing and Launching Cryptocurrencies" />
+            </div>
             <div class="book-body">
               <h3>Designing and Launching Cryptocurrencies</h3>
               <p>A complete guide to blockchain development and launching assets.</p>
@@ -1470,7 +1486,9 @@
           </article>
 
           <article class="card book-card">
-            <div class="book-cover accent">CP</div>
+            <div class="book-cover">
+              <img src="assets/04.png" alt="Cover of Copy Paste and Death of Reason" />
+            </div>
             <div class="book-body">
               <h3>Copy Paste and Death of Reason</h3>
               <p>Exploring automation, imitation, and the logic of modern systems.</p>
