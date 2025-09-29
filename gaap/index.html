@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoGAAP – Automated Accounting Suite</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="../index.html">← Back to AES</a>
+      <h1>AutoGAAP</h1>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Journal Entry Form</h2>
+      <form id="journalForm">
+        <label>Date <input type="date" id="postDate" required /></label><br>
+        <label>Description <input type="text" id="description" required /></label><br><br>
+
+        <h3>Account 1</h3>
+        <label>Type <input type="text" id="account1Type" required /></label>
+        <label>Name <input type="text" id="account1Name" required /></label>
+        <label>Debit <input type="number" id="debitAmount1" /></label>
+        <label>Credit <input type="number" id="creditAmount1" /></label>
+
+        <h3>Account 2</h3>
+        <label>Type <input type="text" id="account2Type" required /></label>
+        <label>Name <input type="text" id="account2Name" required /></label>
+        <label>Debit <input type="number" id="debitAmount2" /></label>
+        <label>Credit <input type="number" id="creditAmount2" /></label>
+
+        <button type="submit">Add Entry</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Ledger</h2>
+      <div id="ledgerDisplay"></div>
+      <div id="journalEntries"></div>
+      <div id="balanceIndicator"></div>
+    </section>
+
+    <section>
+      <h2>AutoGAAP Analysis</h2>
+      <button id="runAutoGaap">Run Analysis</button>
+      <div id="autoGaapSummary"></div>
+      <div id="autoGaapRecommendations"></div>
+      <canvas id="autoGaapChart"></canvas>
+    </section>
+
+    <section>
+      <h2>Depreciation</h2>
+      <label>Asset Name <input type="text" id="asset-name"></label>
+      <label>Asset Value <input type="number" id="asset-value"></label>
+      <label>Useful Life (Years) <input type="number" id="useful-life"></label>
+      <label><input type="checkbox" id="apply-depreciation"> Apply Depreciation</label>
+      <div id="depreciation-info"></div>
+    </section>
+
+    <section>
+      <h2>Exports</h2>
+      <button id="exportPDF">Export to PDF</button>
+      <button id="exportJSON">Export to JSON</button>
+    </section>
+
+    <section>
+      <h2>Location Info</h2>
+      <div id="location-info">Loading location...</div>
+    </section>
+  </main>
+
+  <!-- === Scripts === -->
+  <script src="journal.js"></script>
+  <script src="balance.js"></script>
+  <script src="base_app.js"></script>
+  <script src="chart.js"></script>
+  <script src="depreciation.js"></script>
+  <script src="export.js"></script>
+  <script src="geo_location.js"></script>
+  <script src="autoGAAP.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
+
