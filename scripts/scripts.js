@@ -1,143 +1,190 @@
-// === Mouse glow effect on cards ===
-const applyMouseGlow = () => {
+const applyCardGlow = () => {
   document.querySelectorAll('.card').forEach((card) => {
-    card.addEventListener('mousemove', (event) => {
+    const handlePointer = (event) => {
       const rect = card.getBoundingClientRect();
-      card.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
-      card.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
-    });
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    };
 
-    card.addEventListener('mouseleave', () => {
+    card.addEventListener('pointermove', handlePointer, { passive: true });
+    card.addEventListener('pointerleave', () => {
       card.style.removeProperty('--mouse-x');
       card.style.removeProperty('--mouse-y');
     });
-
-    card.addEventListener('touchmove', (event) => {
-      const touch = event.touches[0];
-      if (!touch) return;
-      const rect = card.getBoundingClientRect();
-      card.style.setProperty('--mouse-x', `${touch.clientX - rect.left}px`);
-      card.style.setProperty('--mouse-y', `${touch.clientY - rect.top}px`);
-    }, { passive: true });
   });
 };
-applyMouseGlow();
 
-// === Pointer glow background ===
-if (window.matchMedia('(pointer: fine)').matches) {
-  document.body.addEventListener('pointermove', (event) => {
-    const x = (event.clientX / window.innerWidth) * 100;
-    const y = (event.clientY / window.innerHeight) * 100;
-    document.body.style.setProperty('--pointer-x', `${x}%`);
-    document.body.style.setProperty('--pointer-y', `${y}%`);
-  }, { passive: true });
-}
+const applyPointerGlow = () => {
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+  document.body.addEventListener(
+    'pointermove',
+    (event) => {
+      const x = (event.clientX / window.innerWidth) * 100;
+      const y = (event.clientY / window.innerHeight) * 100;
+      document.body.style.setProperty('--pointer-x', `${x}%`);
+      document.body.style.setProperty('--pointer-y', `${y}%`);
+    },
+    { passive: true }
+  );
+};
 
-// === Scroll progress bar ===
-const progressBar = document.querySelector('.scroll-progress span');
-if (progressBar) {
-  const updateProgress = () => {
-    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
-    const clamped = Math.min(100, Math.max(12, progress));
-    progressBar.style.width = `${clamped}%`;
-  };
-  updateProgress();
-  window.addEventListener('scroll', updateProgress, { passive: true });
-  window.addEventListener('resize', updateProgress);
-}
+const applyTabGroups = () => {
+  document.querySelectorAll('[data-tab-group]').forEach((group) => {
+    const buttons = Array.from(group.querySelectorAll('.tab-button'));
+    const panels = Array.from(group.querySelectorAll('.tab-panel'));
 
-// === AES Assistant ===
-const assistantForm = document.getElementById('assistantForm');
-const assistantLog = document.getElementById('assistantLog');
+    const activate = (targetId) => {
+      buttons.forEach((button) => {
+        const isActive = button.dataset.tabTarget === targetId;
+        button.classList.toggle('active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
 
-if (assistantForm && assistantLog) {
-  const assistantInput = document.getElementById('assistantInput');
-  const assistantButton = assistantForm.querySelector('button[type="submit"]');
+      panels.forEach((panel) => {
+        const isActive = panel.id === targetId;
+        panel.classList.toggle('active', isActive);
+        panel.setAttribute('aria-hidden', String(!isActive));
+      });
+    };
 
-  const fallbackResponses = [
-    "Here’s what I can prep for you next:\n• Capture goals and constraints\n• Draft a systems map\n• Share the first interactive prototype plan.",
-    "I can pull a short brief with scope, timeline, and three pricing routes so you can pick the path that fits.",
-    "Let’s sync your library with the assistant. I’ll package prompts, automations, and launch collateral for an easy start."
-  ];
-
-  const patterns = [
-    { test: /arbitrage|path|cycle|profit|execution/, response: "AES Copilot: I’ll pull the latest validated arbitrage paths, profit margins, and execution steps for you." },
-    { test: /loan|flashloan|depth|liquidity/, response: "AES Copilot: Here’s the flashloan depth across providers and liquidity metrics relevant to your query." },
-    { test: /service|integration|retainer/, response: "AES Copilot: We can provision forensic logs, custom integrations, or research retainers depending on your needs." },
-    { test: /ai|assistant|copilot|automation/, response: "AES Copilot: I summarize logs, generate execution breakdowns, and help tune your arbitrage strategies in real time." },
-    { test: /price|budget|cost|rate|subscription/, response: "AES Copilot: Forensic log subscriptions and integrations are priced by scope; I’ll draft options for you." }
-  ];
-
-  let responseIndex = 0;
-
-  const appendMessage = (role, text) => {
-    const bubble = document.createElement('div');
-    bubble.className = `message ${role}`;
-    bubble.textContent = text;
-    assistantLog.appendChild(bubble);
-    assistantLog.scrollTop = assistantLog.scrollHeight;
-  };
-
-  const generateResponse = (input) => {
-    const normalized = input.toLowerCase();
-    for (const pattern of patterns) {
-      if (pattern.test(normalized)) {
-        return pattern.response;
-      }
-    }
-    const reply = fallbackResponses[responseIndex % fallbackResponses.length];
-    responseIndex += 1;
-    return reply;
-  };
-
-  const defaultLabel = assistantButton ? assistantButton.textContent : '';
-
-  assistantForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const value = assistantInput.value.trim();
-    if (!value) return;
-
-    appendMessage('user', value);
-    assistantInput.value = '';
-
-    if (assistantButton) {
-      assistantButton.disabled = true;
-      assistantButton.textContent = 'Thinking…';
-    }
-
-    setTimeout(() => {
-      appendMessage('bot', generateResponse(value));
-      if (assistantButton) {
-        assistantButton.disabled = false;
-        assistantButton.textContent = defaultLabel;
-      }
-      assistantInput.focus();
-    }, 550 + Math.random() * 450);
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activate(button.dataset.tabTarget);
+      });
+    });
   });
-}
+};
 
-// === Contact form handler ===
-const contactForm = document.getElementById('contactForm');
-const contactStatus = document.getElementById('contactStatus');
+const applyTimelinePulse = () => {
+  const events = Array.from(document.querySelectorAll('[data-timeline] .timeline-event'));
+  if (events.length === 0) return;
 
-if (contactForm && contactStatus) {
-  let statusTimeout;
-  contactForm.addEventListener('submit', (event) => {
+  let index = events.findIndex((event) => event.classList.contains('active'));
+  if (index < 0) index = 0;
+
+  const rotate = () => {
+    events.forEach((event, i) => {
+      event.classList.toggle('active', i === index);
+    });
+    index = (index + 1) % events.length;
+  };
+
+  setInterval(rotate, 6000);
+};
+
+const applyAccordion = () => {
+  document.querySelectorAll('[data-accordion] .accordion-trigger').forEach((trigger) => {
+    const panel = trigger.nextElementSibling;
+    if (!panel) return;
+
+    trigger.addEventListener('click', () => {
+      const expanded = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', String(!expanded));
+      trigger.querySelector('.icon').textContent = expanded ? '+' : '–';
+      if (expanded) {
+        panel.hidden = true;
+      } else {
+        panel.hidden = false;
+      }
+    });
+  });
+};
+
+const applyCopyButtons = () => {
+  document.querySelectorAll('[data-copy]').forEach((button) => {
+    const selector = button.getAttribute('data-copy');
+    if (!selector) return;
+    const target = document.querySelector(selector);
+    if (!target) return;
+
+    button.addEventListener('click', async () => {
+      const text = target.textContent?.trim();
+      if (!text) return;
+
+      const original = button.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied!';
+      } catch (error) {
+        console.error('Copy failed', error);
+        button.textContent = 'Press Ctrl+C';
+      }
+
+      setTimeout(() => {
+        button.textContent = original;
+      }, 1800);
+    });
+  });
+};
+
+const applyContactForm = () => {
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('contactStatus');
+  if (!form || !status) return;
+
+  let timeoutId;
+  form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const formData = new FormData(contactForm);
-    const rawName = (formData.get('name') || '').toString().trim();
-    const friendlyName = rawName ? rawName.split(' ')[0] : 'friend';
+    const formData = new FormData(form);
+    const rawName = formData.get('name');
+    const friendly = rawName ? rawName.toString().trim().split(' ')[0] : 'operator';
 
-    contactStatus.textContent = `Thanks ${friendlyName}! We’ll reply within one business day.`;
-    contactStatus.classList.add('visible');
+    status.textContent = `Appreciate it, ${friendly}. Strategy desk will revert within one business day.`;
+    status.classList.add('visible');
 
-    clearTimeout(statusTimeout);
-    statusTimeout = setTimeout(() => {
-      contactStatus.classList.remove('visible');
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      status.textContent = '';
+      status.classList.remove('visible');
     }, 8000);
 
-    contactForm.reset();
+    form.reset();
   });
-}
+};
 
+const applyNavToggle = () => {
+  const toggle = document.querySelector('[data-nav-toggle]');
+  const links = document.querySelector('[data-nav-links]');
+  if (!toggle || !links) return;
+
+  const update = (open) => {
+    toggle.setAttribute('aria-expanded', String(open));
+    links.dataset.open = open ? 'true' : 'false';
+  };
+
+  toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    update(open);
+  });
+
+  links.querySelectorAll('a').forEach((anchor) => {
+    anchor.addEventListener('click', () => update(false));
+  });
+};
+
+const applyYear = () => {
+  const target = document.getElementById('year');
+  if (target) {
+    target.textContent = new Date().getFullYear();
+  }
+};
+
+const boot = () => {
+  applyCardGlow();
+  applyPointerGlow();
+  applyTabGroups();
+  applyTimelinePulse();
+  applyAccordion();
+  applyCopyButtons();
+  applyContactForm();
+  applyNavToggle();
+  applyYear();
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}

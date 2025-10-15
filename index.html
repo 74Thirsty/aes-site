@@ -3,1779 +3,471 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AES – Arbitrage Execution System</title>
+  <title>AIS – Node-Integrated Arbitrage System</title>
+  <meta name="description" content="Feature-rich control center for a node-integrated arbitrage system with validator-governed execution, forensic logging, and compliance-aligned automation." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
-  <meta name="description" content="Autonomous arbitrage execution system with multi-DEX scanning, flashloans, ML validation, and Safe-wrapped execution." />
-  <style>
-    :root {
-      color-scheme: dark;
-      --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-      --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
-      --bg: radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.18), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(249, 115, 22, 0.12), transparent 55%), #010513;
-      --grid-line: rgba(148, 163, 184, 0.08);
-      --surface: rgba(10, 15, 32, 0.74);
-      --surface-strong: rgba(15, 23, 42, 0.92);
-      --surface-soft: rgba(24, 34, 58, 0.5);
-      --border: rgba(148, 163, 184, 0.28);
-      --border-strong: rgba(148, 163, 184, 0.42);
-      --text: #f8fafc;
-      --text-dim: #cbd5f5;
-      --text-muted: rgba(148, 163, 184, 0.88);
-      --primary: #38bdf8;
-      --primary-strong: #0ea5e9;
-      --primary-soft: rgba(56, 189, 248, 0.12);
-      --accent: #f97316;
-      --success: #34d399;
-      --danger: #f87171;
-      --radius-lg: 28px;
-      --radius-md: 20px;
-      --radius-sm: 12px;
-      --shadow-lg: 0 32px 80px rgba(6, 12, 32, 0.55);
-      --shadow-md: 0 20px 60px rgba(8, 16, 40, 0.38);
-      --ring-glow: rgba(56, 189, 248, 0.35);
-    }
-
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100%;
-      font-family: var(--font-sans);
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      justify-content: center;
-      padding: clamp(24px, 5vw, 64px);
-      position: relative;
-      overflow-x: hidden;
-      --pointer-x: 38%;
-      --pointer-y: 24%;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-      background-size: 90px 90px;
-      opacity: 0.38;
-      pointer-events: none;
-      z-index: -2;
-      animation: gridPulse 22s linear infinite;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(620px circle at var(--pointer-x) var(--pointer-y), rgba(56, 189, 248, 0.18), transparent 72%),
-        radial-gradient(460px circle at calc(var(--pointer-x) + 10%) calc(var(--pointer-y) + 18%), rgba(249, 115, 22, 0.12),
-          transparent 70%);
-      pointer-events: none;
-      transition: background-position 0.2s ease-out;
-      z-index: -1;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      margin: 0;
-      font-weight: 650;
-      color: var(--text);
-      letter-spacing: -0.01em;
-    }
-
-    h1 {
-      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
-      line-height: 1.08;
-      font-family: var(--font-display);
-    }
-
-    h2 {
-      font-size: clamp(1.8rem, 3vw, 2.6rem);
-      font-family: var(--font-display);
-    }
-
-    h3 {
-      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
-      font-family: var(--font-display);
-    }
-
-    p {
-      margin: 0;
-      line-height: 1.7;
-      color: var(--text-dim);
-    }
-
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    a:hover {
-      color: var(--primary);
-    }
-
-    a:focus-visible,
-    button:focus-visible,
-    input:focus-visible,
-    textarea:focus-visible {
-      outline: 3px solid rgba(56, 189, 248, 0.6);
-      outline-offset: 3px;
-    }
-
-    .page-shell {
-      width: min(1160px, 100%);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(32px, 6vw, 60px);
-      position: relative;
-    }
-
-    .site-header {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(24px, 4vw, 36px);
-    }
-
-    .top-nav {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 18px clamp(20px, 4vw, 32px);
-      padding-bottom: 28px;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.65));
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-md);
-      position: sticky;
-      top: clamp(14px, 3vw, 28px);
-      z-index: 40;
-      backdrop-filter: blur(16px);
-      overflow: hidden;
-    }
-
-    .top-nav::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      border: 1px solid rgba(56, 189, 248, 0.12);
-      pointer-events: none;
-    }
-
-    .scroll-progress {
-      position: absolute;
-      left: clamp(20px, 4vw, 32px);
-      right: clamp(20px, 4vw, 32px);
-      bottom: 12px;
-      height: 3px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.16);
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .scroll-progress span {
-      display: block;
-      width: var(--progress, 12%);
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, rgba(56, 189, 248, 0.9), rgba(14, 165, 233, 0.6));
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
-      transition: width 0.24s ease;
-    }
-
-    nav .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 1.1rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.12));
-      border: 1px solid rgba(56, 189, 248, 0.45);
-      box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.12);
-      font-size: 1.05rem;
-      font-family: var(--font-display);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: clamp(12px, 3vw, 22px);
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      font-size: 0.95rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 8px 12px;
-      border-radius: 999px;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
-
-    .nav-links a:hover {
-      background: rgba(56, 189, 248, 0.16);
-      color: var(--primary);
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      background: rgba(15, 23, 42, 0.6);
-      color: var(--text);
-      font-weight: 600;
-      font-size: 0.95rem;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .button.primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-      box-shadow: 0 20px 36px rgba(14, 165, 233, 0.32);
-    }
-
-    .button.outline {
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.45);
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 32px rgba(56, 189, 248, 0.16);
-      border-color: rgba(56, 189, 248, 0.3);
-      color: var(--text);
-    }
-
-    .button.primary:hover {
-      box-shadow: 0 26px 38px rgba(14, 165, 233, 0.4);
-    }
-
-    .button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    .hero {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(32px, 6vw, 48px);
-      padding: clamp(36px, 7vw, 64px);
-      background: linear-gradient(135deg, rgba(10, 19, 45, 0.92), rgba(6, 12, 32, 0.78));
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(148, 163, 184, 0.32);
-      box-shadow: var(--shadow-lg);
-      position: relative;
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .hero::before,
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      mix-blend-mode: screen;
-      opacity: 0.6;
-    }
-
-    .hero::before {
-      background: radial-gradient(340px circle at 10% 20%, rgba(56, 189, 248, 0.22), transparent 70%);
-      z-index: 0;
-    }
-
-    .hero::after {
-      background: radial-gradient(520px circle at 82% 22%, rgba(56, 189, 248, 0.18), transparent 72%);
-      z-index: 0;
-      filter: blur(0.6px);
-    }
-
-    .hero > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-ribbon {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      align-self: flex-start;
-      padding: 8px 18px;
-      border-radius: 999px;
-      background: rgba(15, 118, 170, 0.28);
-      color: var(--primary);
-      font-size: 0.8rem;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25);
-    }
-
-    .hero-ribbon .pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      position: relative;
-      display: inline-flex;
-    }
-
-    .hero-ribbon .pulse-dot::after {
-      content: "";
-      position: absolute;
-      inset: -6px;
-      border-radius: 50%;
-      border: 1px solid rgba(52, 211, 153, 0.5);
-      animation: pulse 1.8s ease-out infinite;
-    }
-
-    .hero-ribbon .ribbon-pill {
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(8, 14, 36, 0.65);
-      color: rgba(248, 250, 252, 0.85);
-      letter-spacing: 0.08em;
-    }
-
-    .hero-main {
-      display: grid;
-      gap: clamp(28px, 6vw, 44px);
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
-      align-items: start;
-    }
-
-    .hero-copy {
-      display: flex;
-      flex-direction: column;
-      gap: 22px;
-      max-width: 720px;
-    }
-
-    .hero-copy h1 {
-      font-family: var(--font-display);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    .hero-highlight {
-      display: inline-block;
-      background: linear-gradient(120deg, rgba(56, 189, 248, 0.15), rgba(14, 165, 233, 0.05));
-      border-radius: 16px;
-      padding: 0.3em 0.6em;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-highlight::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(180px circle at 0% 0%, rgba(56, 189, 248, 0.3), transparent 70%);
-      opacity: 0.6;
-    }
-
-    .hero-summary {
-      font-size: 1.05rem;
-      color: rgba(226, 232, 240, 0.86);
-    }
-
-    .hero-list {
-      display: grid;
-      gap: 10px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      color: rgba(203, 213, 225, 0.82);
-      font-size: 0.98rem;
-    }
-
-    .hero-list li {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      background: rgba(15, 23, 42, 0.55);
-      border-radius: 14px;
-      border: 1px solid rgba(148, 163, 184, 0.24);
-      backdrop-filter: blur(6px);
-    }
-
-    .hero-list li::before {
-      content: "✶";
-      color: var(--primary);
-      font-size: 0.85rem;
-      transform: translateY(-1px);
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-
-    .hero-visual {
-      position: relative;
-      min-height: 280px;
-      display: grid;
-      place-items: center;
-    }
-
-    .glow-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(0.8px);
-      opacity: 0.6;
-      mix-blend-mode: screen;
-      animation: float 16s ease-in-out infinite;
-    }
-
-    .orb-one {
-      width: 240px;
-      height: 240px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 70%);
-      animation-delay: -4s;
-    }
-
-    .orb-two {
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(249, 115, 22, 0.22), transparent 70%);
-      animation-delay: 2s;
-    }
-    .hero-device {
-      position: relative;
-      width: min(320px, 100%);
-      border-radius: 26px;
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      background: linear-gradient(160deg, rgba(13, 22, 42, 0.88), rgba(15, 23, 42, 0.65));
-      box-shadow: 0 24px 44px rgba(8, 16, 40, 0.55);
-      overflow: hidden;
-      display: grid;
-      gap: 16px;
-      padding: 20px;
-      backdrop-filter: blur(8px);
-      animation: float 18s ease-in-out infinite;
-      animation-delay: -6s;
-    }
-
-    .hero-device::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: radial-gradient(200px circle at 20% 15%, rgba(56, 189, 248, 0.18), transparent 70%);
-      opacity: 0.6;
-    }
-
-    .hero-device > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-device-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 0.78rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: rgba(148, 163, 184, 0.7);
-    }
-
-    .device-dots {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .device-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: rgba(148, 163, 184, 0.38);
-    }
-
-    .device-dot.primary {
-      background: rgba(56, 189, 248, 0.7);
-      box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.12);
-    }
-
-    .hero-device-body {
-      display: grid;
-      gap: 12px;
-      font-size: 0.92rem;
-      color: rgba(226, 232, 240, 0.86);
-    }
-
-    .hero-device-body strong {
-      font-family: var(--font-display);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--primary);
-      font-size: 0.78rem;
-    }
-
-    .hero-device-body .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .hero-chip {
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(14, 165, 233, 0.2);
-      color: rgba(248, 250, 252, 0.9);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .hero-device-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      font-size: 0.8rem;
-      color: rgba(148, 163, 184, 0.8);
-    }
-
-    .hero-device-footer span {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .hero-device-footer span::before {
-      content: "▣";
-      color: var(--accent);
-      font-size: 0.7rem;
-    }
-
-    .hero-metrics {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
-
-    .card {
-      position: relative;
-      background: linear-gradient(160deg, rgba(13, 22, 42, 0.9), rgba(15, 23, 42, 0.6));
-      border: 1px solid rgba(148, 163, 184, 0.22);
-      border-radius: var(--radius-md);
-      padding: clamp(22px, 3vw, 28px);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      box-shadow: 0 24px 48px rgba(6, 12, 32, 0.5);
-      overflow: hidden;
-      transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      background: radial-gradient(240px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(56, 189, 248, 0.24), transparent 65%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-    }
-
-    .card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(56, 189, 248, 0.2), transparent 65%);
-      pointer-events: none;
-      opacity: 0.28;
-    }
-
-    .card > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .card:hover {
-      border-color: rgba(56, 189, 248, 0.45);
-      transform: translateY(-4px);
-      box-shadow: 0 30px 54px rgba(6, 12, 32, 0.58);
-    }
-
-    .card:hover::before {
-      opacity: 1;
-    }
-
-    .stat-card {
-      gap: 12px;
-    }
-
-    .stat-card small {
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: var(--text-muted);
-    }
-
-    .stat-card strong {
-      font-size: clamp(1.9rem, 4vw, 2.6rem);
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    .section {
-      position: relative;
-      padding: clamp(32px, 6vw, 54px);
-      background: linear-gradient(150deg, rgba(9, 16, 36, 0.92), rgba(13, 22, 44, 0.76));
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      flex-direction: column;
-      gap: clamp(24px, 4vw, 36px);
-      overflow: hidden;
-      isolation: isolate;
-    }
-
-    .section::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(520px circle at 88% 18%, rgba(56, 189, 248, 0.16), transparent 75%);
-      pointer-events: none;
-      opacity: 0.55;
-      z-index: 0;
-    }
-
-    .section::before {
-      content: "";
-      position: absolute;
-      inset: 1px;
-      border-radius: calc(var(--radius-lg) - 1px);
-      border: 1px solid rgba(56, 189, 248, 0.08);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .section > * {
-      position: relative;
-      z-index: 2;
-    }
-    .section-heading {
-      display: grid;
-      gap: 12px;
-      max-width: 720px;
-    }
-
-    .section-heading p {
-      color: rgba(203, 213, 225, 0.85);
-    }
-
-    .cards-grid {
-      display: grid;
-      gap: 20px;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 12px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.18);
-      color: var(--primary);
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .badge.success {
-      background: rgba(52, 211, 153, 0.18);
-      color: var(--success);
-    }
-
-    .badge.accent {
-      background: rgba(249, 115, 22, 0.2);
-      color: var(--accent);
-    }
-
-    .tag-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.14);
-      color: var(--primary);
-      font-size: 0.82rem;
-      letter-spacing: 0.03em;
-    }
-
-    .tag::before {
-      content: "•";
-      font-size: 0.7rem;
-      line-height: 1;
-    }
-
-    .project-card h3 {
-      font-size: 1.28rem;
-    }
-
-    .project-meta {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 8px;
-    }
-
-    .book-card {
-      gap: 22px;
-    }
-
-    .book-cover {
-      height: 160px;
-      border-radius: var(--radius-sm);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
-      font-size: 1.2rem;
-      letter-spacing: 0.2em;
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.08));
-      border: 1px solid rgba(56, 189, 248, 0.3);
-    }
-
-    .book-cover.alt {
-      background: linear-gradient(135deg, rgba(52, 211, 153, 0.25), rgba(15, 118, 110, 0.1));
-      border-color: rgba(52, 211, 153, 0.35);
-    }
-
-    .book-cover.accent {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.28), rgba(217, 119, 6, 0.12));
-      border-color: rgba(249, 115, 22, 0.38);
-    }
-
-    .book-body {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .book-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .book-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: baseline;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .book-meta .price {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
-
-    .feature-list {
-      display: grid;
-      gap: 10px;
-      font-size: 0.95rem;
-      color: rgba(226, 232, 240, 0.88);
-    }
-
-    .feature-list li {
-      position: relative;
-      padding-left: 22px;
-    }
-
-    .feature-list li::before {
-      content: "⟶";
-      position: absolute;
-      left: 0;
-      top: 0;
-      color: var(--primary);
-    }
-
-    .service-header {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .service-rate {
-      font-size: 0.95rem;
-      color: var(--accent);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .assistant-layout {
-      display: grid;
-      gap: 22px;
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-      align-items: start;
-    }
-
-    .assistant-card {
-      gap: 18px;
-    }
-
-    .assistant-log {
-      background: rgba(15, 23, 42, 0.55);
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      border-radius: var(--radius-sm);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      max-height: 320px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-
-    .assistant-log::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .assistant-log::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.32);
-      border-radius: 8px;
-    }
-
-    .message {
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(30, 41, 59, 0.7);
-      color: var(--text);
-      align-self: flex-start;
-      line-height: 1.6;
-      white-space: pre-line;
-      border: 1px solid rgba(148, 163, 184, 0.24);
-      max-width: 100%;
-    }
-
-    .message.user {
-      background: rgba(56, 189, 248, 0.18);
-      color: var(--primary);
-      align-self: flex-end;
-      border-color: rgba(56, 189, 248, 0.24);
-    }
-    .assistant-form {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .assistant-form input {
-      width: 100%;
-    }
-
-    .assistant-playbook {
-      gap: 18px;
-    }
-
-    .assistant-footnote {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-
-    .contact-grid {
-      display: grid;
-      gap: 22px;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-
-    .contact-form {
-      gap: 16px;
-    }
-
-    label span {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-    }
-
-    label {
-      display: grid;
-      gap: 6px;
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: rgba(15, 23, 42, 0.65);
-      color: var(--text);
-      font: inherit;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: rgba(148, 163, 184, 0.6);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 150px;
-    }
-
-    .form-status {
-      font-size: 0.92rem;
-      color: var(--success);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      margin-top: -4px;
-    }
-
-    .form-status.visible {
-      opacity: 1;
-    }
-
-    .contact-meta {
-      gap: 16px;
-    }
-
-    .availability {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      font-size: 0.92rem;
-      color: var(--text-muted);
-    }
-
-    .contact-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .contact-list li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: rgba(226, 232, 240, 0.9);
-    }
-
-    .contact-list li::before {
-      content: "↘";
-      color: var(--primary);
-    }
-
-    .contact-note p {
-      color: rgba(226, 232, 240, 0.85);
-    }
-
-    .site-main {
-      display: flex;
-      flex-direction: column;
-      gap: clamp(32px, 5vw, 56px);
-    }
-
-    .site-footer {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-      padding: 28px;
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(148, 163, 184, 0.28);
-      background: rgba(15, 23, 42, 0.78);
-      box-shadow: var(--shadow-md);
-      text-align: center;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px;
-      justify-content: center;
-      font-size: 0.9rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: scale(0.6);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1.6);
-        opacity: 0;
-      }
-    }
-
-    @keyframes float {
-      0%,
-      100% {
-        transform: translate3d(0, 0, 0);
-      }
-      50% {
-        transform: translate3d(12px, -14px, 0);
-      }
-    }
-
-    @keyframes gridPulse {
-      0% {
-        background-position: 0 0, 0 0;
-      }
-      100% {
-        background-position: 90px 90px, 90px 90px;
-      }
-    }
-
-    @media (max-width: 1020px) {
-      .assistant-layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 880px) {
-      body {
-        padding: clamp(20px, 5vw, 40px);
-      }
-
-      .hero-main {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-visual {
-        min-height: 220px;
-      }
-
-      .hero-metrics {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      }
-    }
-
-    @media (max-width: 720px) {
-      .top-nav {
-        flex-direction: column;
-        align-items: flex-start;
-        padding-bottom: 24px;
-      }
-
-      .nav-links {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      }
-
-      .nav-cta {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .scroll-progress {
-        position: static;
-        width: 100%;
-        margin-top: 6px;
-        height: 4px;
-      }
-
-      .hero,
-      .section {
-        padding: clamp(26px, 7vw, 38px);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .hero-actions,
-      .card-actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .assistant-form {
-        grid-template-columns: 1fr;
-      }
-    }
-    /* Dropdown container */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-.dropdown-toggle {
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 999px;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.dropdown-toggle:hover {
-  background: rgba(56, 189, 248, 0.16);
-  color: var(--primary);
-}
-
-<nav class="top-nav">
-  <a class="brand" href="#top">
-    <span class="brand-mark">⌁</span>
-    AES
-  </a>
-  <div class="nav-links">
-    <div class="dropdown">
-      <a href="#projects" class="dropbtn">Projects ▾</a>
-      <div class="dropdown-content">
-        <a href="https://github.com/74Thirsty" target="_blank">GitHub</a>
-        <a href="https://hub.docker.com/u/74thirsty" target="_blank">Docker Hub</a>
-        <a href="https://pypi.org/user/74thirsty/" target="_blank">PyPI</a>
-        <a href="gaap/index.html">AutoGAAP</a>
-        <a href="wizard/index.html">Smart Contract Wizard</a>
-      </div>
-    </div>
-    <a href="#modules">AES Modules</a>
-    <a href="#books">Books</a>
-    <a href="#services">Services</a>
-    <a href="#assistant">AI Assistant</a>
-    <a href="#contact">Contact</a>
-  </div>
-  <a class="button primary nav-cta" href="#contact">Start a project</a>
-  <div class="scroll-progress" aria-hidden="true">
-    <span></span>
-  </div>
-</nav>
-
-<style>
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  .dropbtn {
-    cursor: pointer;
-    font-size: 0.95rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 8px 12px;
-    border-radius: 999px;
-  }
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: rgba(15, 23, 42, 0.95);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    min-width: 180px;
-    z-index: 999;
-  }
-  .dropdown-content a {
-    display: block;
-    padding: 10px 14px;
-    color: var(--text-dim);
-    text-decoration: none;
-  }
-  .dropdown-content a:hover {
-    background-color: rgba(56, 189, 248, 0.15);
-    color: var(--primary);
-  }
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/styles.css" />
 </head>
 <body>
   <div class="page-shell">
-    <header id="top" class="site-header">
-      <nav class="top-nav">
-        <a class="brand" href="#top">
-          <span class="brand-mark">⌁</span>
-          AES
+    <header class="hero" id="top">
+      <nav class="nav">
+        <a class="logo" href="#top" aria-label="Node-integrated Arbitrage System home">
+          <span class="logo-mark">🧠</span>
+          <span class="logo-type">AIS</span>
         </a>
-        <div class="nav-links">
-          <a href="#projects">Projects</a>
-          <a href="#books">Books</a>
-          <a href="#services">Services</a>
-          <a href="#assistant">AI Assistant</a>
-          <a href="#contact">Contact</a>
-        </div>
-        <a class="button primary nav-cta" href="#contact">Start a project</a>
-        <div class="scroll-progress" aria-hidden="true">
-          <span></span>
+        <button class="nav-toggle" data-nav-toggle aria-expanded="false" aria-label="Toggle navigation">
+          <span></span><span></span><span></span>
+        </button>
+        <ul class="nav-links" data-nav-links>
+          <li><a href="#stack">Architecture</a></li>
+          <li><a href="#validators">Validators</a></li>
+          <li><a href="#exchanges">Exchanges</a></li>
+          <li><a href="#engine">Arbitrage Core</a></li>
+          <li><a href="#logging">Logging</a></li>
+          <li><a href="#control">Control</a></li>
+        </ul>
+        <div class="nav-cta">
+          <a class="pill" href="#engage">Launch Briefing</a>
         </div>
       </nav>
-
-      <div class="hero">
-        <div class="hero-ribbon">
-          <span class="pulse-dot" aria-hidden="true"></span>
-          AES Mainnet Launch · Q4 2025
-          <span class="ribbon-pill">Limited Capacity</span>
-        </div>
-        <div class="hero-main">
-          <div class="hero-copy">
-            <span class="eyebrow">Autonomous arbitrage engine at the bleeding edge of DeFi.</span>
-            <h1><span class="hero-highlight">Profitable arbitrage at scale</span> secured by Safe-wrapped execution.</h1>
-            <p class="hero-summary">AES discovers, validates, and executes profit paths across decentralized liquidity, powered by flashloans, ML validation, and Gnosis Safe multi-sig control.</p>
-            <ul class="hero-list">
-              <li>Graph-driven discovery (RPZE + Bellman-Ford)</li>
-              <li>ML-validated profit scoring</li>
-              <li>Ephemeral executor & Flashbots submission</li>
-            </ul>
-            <div class="hero-actions">
-              <a class="button primary" href="#projects">See core modules</a>
-              <a class="button outline" href="#assistant">Chat with AES Copilot</a>
-            </div>
-          </div>
-          <div class="hero-visual">
-            <span class="glow-orb orb-one" aria-hidden="true"></span>
-            <span class="glow-orb orb-two" aria-hidden="true"></span>
-            <div class="hero-device" aria-hidden="true">
-              <div class="hero-device-header">
-                <span class="device-dots">
-                  <span class="device-dot"></span>
-                  <span class="device-dot primary"></span>
-                  <span class="device-dot"></span>
-                </span>
-                <span>AES Dashboard</span>
-              </div>
-              <div class="hero-device-body">
-                <strong>Live roadmap</strong>
-                <p>Arbitrage graph with 2,300+ edges. Loan & swap execution packages queued for Safe signing.</p>
-                <div class="chip-row">
-                  <span class="hero-chip">Realtime pathfinding</span>
-                  <span class="hero-chip">Forensic logging</span>
-                  <span class="hero-chip">Safe-wrapped execution</span>
-                </div>
-              </div>
-              <div class="hero-device-footer">
-                <span>Next milestone · Mainnet rehearsal</span>
-                <span>Launch queued</span>
-              </div>
-            </div>
-          </div>
+      <div class="hero-content">
+        <p class="hero-tag">Node-integrated Arbitrage Intelligence Stack</p>
+        <h1>
+          Provision nodes, arbitrate liquidity, and capture asymmetry under full forensic oversight.
+        </h1>
+        <p class="hero-lede">
+          AIS is a modular execution framework spanning Ethereum, Solana, and BSC with validator-governed intent filters,
+          exchange-native integrations, and semantic trade approvals. Every decision is traced, auditable, and aligned with
+          policy controls out of the box.
+        </p>
+        <div class="hero-actions">
+          <a class="cta" href="#engine">Explore the Engine</a>
+          <a class="cta ghost" href="#logging">See Trace Matrix</a>
         </div>
         <div class="hero-metrics">
-          <article class="card stat-card">
-            <small>Total Profit</small>
-            <strong>$245,000</strong>
-            <p>Across Batch 1 ($35k) and Batch 2 ($210k) arbitrage runs.</p>
+          <article>
+            <p class="metric-label">Validated strategies</p>
+            <p class="metric-value">37</p>
+            <p class="metric-meta">Triangular · Cross-venue · Latency</p>
           </article>
-          <article class="card stat-card">
-            <small>Capital Deployed</small>
-            <strong>$2.3B+</strong>
-            <p>Total flashloan and liquidity routed through AES pipelines.</p>
+          <article>
+            <p class="metric-label">Trace coverage</p>
+            <p class="metric-value">100%</p>
+            <p class="metric-meta">Line-level &amp; semantic</p>
           </article>
-          <article class="card stat-card">
-            <small>Avg Profit per Path</small>
-            <strong>$2,500</strong>
-            <p>Stable per-cycle profitability proven in backtests and live runs.</p>
+          <article>
+            <p class="metric-label">Runtime</p>
+            <p class="metric-value">Ephemeral</p>
+            <p class="metric-meta">Self-destruct post-trade</p>
           </article>
         </div>
       </div>
     </header>
-    <main class="site-main">
-  <section id="modules" class="section">
-    <div class="section-heading">
-      <span class="eyebrow">Core AES Components</span>
-      <h2>Arbitrage Execution System Modules</h2>
-      <p>Each AES module powers autonomous arbitrage: discovery, validation, execution, and control.</p>
-    </div>
-    <div class="cards-grid">
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge success">Live</span>
-          <span>2025</span>
-        </div>
-        <h3>GraphManager</h3>
-        <p>Builds and sanitizes token graphs with 2,300+ edges for arbitrage path discovery.</p>
-      </article>
 
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge success">Live</span>
-          <span>2025</span>
-        </div>
-        <h3>LoanManager</h3>
-        <p>Aggregates flashloan providers and enforces canonical loan schema compliance.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge accent">Beta</span>
-          <span>2025</span>
-        </div>
-        <h3>ArbitrageManager</h3>
-        <p>Orchestrates pathfinding (RPZE + Bellman-Ford) with ML-based profit scoring and validation.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge">QA</span>
-          <span>2025</span>
-        </div>
-        <h3>ExecutionManager</h3>
-        <p>Bundles execution steps, wraps them in Safe transactions, and submits via Flashbots.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge">Studio Lab</span>
-          <span>2025</span>
-        </div>
-        <h3>WalletManager</h3>
-        <p>Rotates Safe owners, manages signers, and validates balances in real time.</p>
-      </article>
-
-      <article class="card project-card">
-        <div class="project-meta">
-          <span class="badge accent">Coming soon</span>
-          <span>2025</span>
-        </div>
-        <h3>ContractManager</h3>
-        <p>Builds and validates Safe-wrapped transaction payloads, including profit sweeps.</p>
-      </article>
-    </div>
-  </section>
-</main>
-
-      <section id="books" class="section">
+    <main>
+      <section id="stack" class="section">
         <div class="section-heading">
-          <span class="eyebrow">Bookshelf</span>
-          <h2>Publications by AES creator</h2>
-          <p>Deep dives into crypto, arbitrage, and system design.</p>
+          <h2>Modular provisioning layer</h2>
+          <p>The base layer orchestrates chain nodes, archival insight, and mempool guardianship so every arbitrage signal is contextualised before it hits the engine.</p>
         </div>
-        <div class="cards-grid books-grid">
-          <article class="card book-card">
-            <div class="book-cover">CA</div>
-            <div class="book-body">
-              <h3>The Crypto Almanac</h3>
-              <p>A definitive annual reference on crypto markets and DeFi systems.</p>
-            </div>
-          </article>
-          
-    <article class="card book-card">
-      <a href="https://books.apple.com/us/book/reactive-profit-zone-expansion/id6749500245" target="_blank" rel="noopener">
-        <div class="book-cover">RP</div>
-        <div class="book-body">
-          <h3>Reactive Profit Zone Expansion</h3>
-          <p>The definitive deep dive into AES’s ML-driven pathfinding engine, combining RPZE with Bellman-Ford for scalable arbitrage discovery.</p>
-        </div>
-      </a>
-    </article>
-
-          <article class="card book-card">
-            <div class="book-cover alt">DL</div>
-            <div class="book-body">
-              <h3>Designing and Launching Cryptocurrencies</h3>
-              <p>A complete guide to blockchain development and launching assets.</p>
-            </div>
-          </article>
-
-          <article class="card book-card">
-            <div class="book-cover accent">CP</div>
-            <div class="book-body">
-              <h3>Copy Paste and Death of Reason</h3>
-              <p>Exploring automation, imitation, and the logic of modern systems.</p>
-            </div>
-          </article>
-        </div>
-      </section>
-      <section id="services" class="section">
-        <div class="section-heading">
-          <span class="eyebrow">Offerings</span>
-          <h2>AES services engineered for funds</h2>
-          <p>Subscriptions and integrations that extend the AES pipeline to your desk.</p>
-        </div>
-        <div class="cards-grid">
-          <article class="card service-card">
-            <div class="service-header">
-              <h3>Forensic Logs Subscription</h3>
-              <span class="service-rate">Monthly</span>
-            </div>
-            <p>Access AES forensic logs with execution traces, gas calibration, and profit validation.</p>
-          </article>
-
-          <article class="card service-card">
-            <div class="service-header">
-              <h3>Custom Arbitrage Integrations</h3>
-              <span class="service-rate">By quote</span>
-            </div>
-            <p>Tailored plugin builds, liquidity integrations, and Safe-wrapped execution plans for funds.</p>
-          </article>
-
-          <article class="card service-card">
-            <div class="service-header">
-              <h3>Research & Advisory Retainers</h3>
-              <span class="service-rate">Quarterly</span>
-            </div>
-            <p>Strategic guidance on arbitrage markets, liquidity depth, and DeFi execution design.</p>
-          </article>
-        </div>
-      </section>
-      <section id="assistant" class="section">
-        <div class="section-heading">
-          <span class="eyebrow">Always-on co-pilot</span>
-          <h2>Meet the AES Copilot</h2>
-          <p>Ask for arbitrage path summaries, loan depth checks, or execution breakdowns. The assistant reflects live AES state.</p>
-        </div>
-        <div class="assistant-layout">
-          <div class="card assistant-card">
-            <h3>Ask the AES AI</h3>
-            <p>Try a question about arbitrage paths, modules, or profit metrics.</p>
-            <div id="assistantLog" class="assistant-log">
-              <div class="message bot">Hey there—I'm the AES Copilot. Ask about arbitrage, loans, or execution and I'll share live insights.</div>
-            </div>
-            <form id="assistantForm" class="assistant-form" autocomplete="off">
-              <label class="visually-hidden" for="assistantInput">Message</label>
-              <input id="assistantInput" name="prompt" type="text" placeholder="Ask for a path summary, loan depth, or execution breakdown…" required />
-              <button type="submit" class="button primary">Send</button>
-            </form>
-          </div>
-          <div class="card assistant-playbook">
-            <h3>Ways the Copilot accelerates your work</h3>
-            <p>Use the built-in AES co-pilot to validate paths, interpret logs, and monitor execution strategies.</p>
-            <ul class="feature-list">
-              <li>Summaries of valid arbitrage cycles</li>
-              <li>Loan depth checks across providers</li>
-              <li>Execution plan breakdowns with schema compliance</li>
-              <li>Profitability insights tuned by ML models</li>
+        <div class="grid grid-3">
+          <article class="card">
+            <header>
+              <span class="badge">Ethereum</span>
+              <h3>Full archival + MEV lens</h3>
+            </header>
+            <ul>
+              <li>Dedicated archive nodes with 14-day lookback snapshots.</li>
+              <li>Mempool mirroring for builder relays &amp; private orderflow.</li>
+              <li>Validator shell enforces policy alignment per transaction.</li>
             </ul>
-            <div class="assistant-footnote">
-              <span class="badge success">24/7 access</span>
-              <span>Responses tuned with live AES logs and forensic data.</span>
-            </div>
+          </article>
+          <article class="card">
+            <header>
+              <span class="badge">Solana</span>
+              <h3>Gulfstream aware</h3>
+            </header>
+            <ul>
+              <li>Slot-level gossip listeners with latency histogram logging.</li>
+              <li>Banking stage semantics ensure intent classification pre-execution.</li>
+              <li>Dynamic quorum weighting for validator veto routes.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <span class="badge">BSC</span>
+              <h3>Permissioned RPC mesh</h3>
+            </header>
+            <ul>
+              <li>Sharded RPC pool with adaptive throttling and health checks.</li>
+              <li>Mempool scrapers tag policy deviations with rejection rationale.</li>
+              <li>Trace logging stamps every call with validator signature.</li>
+            </ul>
+          </article>
+        </div>
+        <div class="detail-panel">
+          <div>
+            <h4>Validator shells</h4>
+            <p>Semantic filters observe transaction narrative, capital exposure, and policy health. No trade executes unless matching validator-approved storyboards.</p>
+          </div>
+          <div>
+            <h4>Trace clarity</h4>
+            <p>Each validator emits decision logs with timestamp, source node, rejected fields, and follow-up cues ready for the audit layer.</p>
           </div>
         </div>
       </section>
-      <section id="forensic-logs" class="section">
-  <div class="section-heading">
-    <span class="eyebrow">Exclusive access</span>
-    <h2>AES Forensic Logs Subscription</h2>
-    <p>Every cycle, every trace, every profit. Get the data stream that powers AES execution, now as a subscription.</p>
-  </div>
-  <div class="cards-grid">
-    <article class="card service-card">
-      <div class="service-header">
-        <h3>Real-time Forensic Logs</h3>
-        <span class="service-rate">From $999 / mo</span>
-      </div>
-      <p>Continuous access to AES forensic logs with full execution traces, gas calibration records, and ML-validated profit scoring.</p>
-      <ul class="feature-list">
-        <li>Cycle-by-cycle arbitrage execution details</li>
-        <li>Loan depth + liquidity snapshots</li>
-        <li>Gas calibration + bundle submission metrics</li>
-        <li>Profit validation and scoring outputs</li>
-      </ul>
-      <div class="card-actions">
-        <a class="button primary" href="#contact">Subscribe now</a>
-        <a class="button outline" href="#assistant">Ask Copilot for a sample log</a>
-      </div>
-    </article>
 
-    <article class="card service-card">
-      <div class="service-header">
-        <h3>Enterprise Tier</h3>
-        <span class="service-rate">By quote</span>
-      </div>
-      <p>Private log feed tailored for funds and trading desks with advanced analytics and dedicated support.</p>
-      <ul class="feature-list">
-        <li>Direct API or Kafka stream delivery</li>
-        <li>Deeper ML insight layers & anomaly alerts</li>
-        <li>Custom dashboards & reporting pipelines</li>
-        <li>Priority engineering + research support</li>
-      </ul>
-      <div class="card-actions">
-        <a class="button outline" href="#contact">Request enterprise demo</a>
-      </div>
-    </article>
-  </div>
-</section>
-
-      <section id="contact" class="section">
+      <section id="validators" class="section soft">
         <div class="section-heading">
-          <span class="eyebrow">Collaborate</span>
-          <h2>Connect with AES</h2>
-          <p>Reach out for subscriptions, integrations, or research retainers.</p>
+          <h2>Validator verdict stream</h2>
+          <p>Explore the semantic signature validators attach to every arbitrage candidate.</p>
         </div>
-        <div class="contact-grid">
-          <form id="contactForm" class="card contact-form">
-            <h3>Tell us about your needs</h3>
-            <p>We’ll review and send you a tailored plan within one business day.</p>
+        <div class="timeline" data-timeline>
+          <article class="timeline-event active">
+            <header>
+              <span class="pill ghost">Intent classified</span>
+              <time datetime="2024-05-21T09:32">09:32:12</time>
+            </header>
+            <h3>Triangular opportunity flagged</h3>
+            <p>Intent scope: ETH/USDT ↔ USDT/USDC ↔ USDC/ETH. Spread width 27 bps. Validator score 0.94.</p>
+            <dl>
+              <div>
+                <dt>Policy check</dt>
+                <dd>Pass (volatility guard within ±12 bps)</dd>
+              </div>
+              <div>
+                <dt>Narrative</dt>
+                <dd>Latent liquidity unlocked via Coinbase depth spike.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="timeline-event">
+            <header>
+              <span class="pill ghost">Mempool sweep</span>
+              <time datetime="2024-05-21T09:32:04">09:32:04</time>
+            </header>
+            <h3>Policy misalignment rejected</h3>
+            <p>Trade canceled: Contradicted compliance rule &ldquo;Stable-pair leverage cap&rdquo;.</p>
+            <dl>
+              <div>
+                <dt>Rejected field</dt>
+                <dd>Borrow leverage exceeds 1.4× cap</dd>
+              </div>
+              <div>
+                <dt>Remediation</dt>
+                <dd>Throttle to policy bracket or await override.</dd>
+              </div>
+            </dl>
+          </article>
+          <article class="timeline-event">
+            <header>
+              <span class="pill ghost">Trace snapshot</span>
+              <time datetime="2024-05-21T09:31:22">09:31:22</time>
+            </header>
+            <h3>Latency arbitrage request</h3>
+            <p>Decision tree logged with 143µs evaluation time. Validator hashed review to IPFS ledger.</p>
+            <dl>
+              <div>
+                <dt>Source</dt>
+                <dd>Binance depth feed vs. Kraken level II</dd>
+              </div>
+              <div>
+                <dt>Outcome</dt>
+                <dd>Approved: latency delta 612µs, risk zeroed.</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section id="exchanges" class="section">
+        <div class="section-heading">
+          <h2>Exchange integration fabric</h2>
+          <p>Unified adapters cover major centralized and decentralized venues with immutable token naming and latency-aware request scheduling.</p>
+        </div>
+        <div class="exchange-grid">
+          <article class="card">
+            <header>
+              <h3>Exchange mesh</h3>
+              <p class="caption">Binance · Coinbase Pro · Kraken · Uniswap · Curve</p>
+            </header>
+            <ul>
+              <li>Dual-stack REST/WebSocket connectors with async backoff.</li>
+              <li>Semantic mismatch flags for payload drift and schema change.</li>
+              <li>Retry orchestration annotated with latency telemetry.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Token normalisation</h3>
+              <p class="caption">Immutable references &amp; liquidity guards</p>
+            </header>
+            <ul>
+              <li>Symbol registry resolves aliases across CEX/DEX endpoints.</li>
+              <li>Liquidity validator ensures depth, slippage, and fee budgets.</li>
+              <li>Versioned catalogue protects automation from renames.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Telemetry console</h3>
+              <p class="caption">Trace every call in real time</p>
+            </header>
+            <ul>
+              <li>Per-call logs with response payload snapshots.</li>
+              <li>Latency percentiles &amp; jitter charts streamed to dashboard.</li>
+              <li>Adaptive rate limits per venue enforced via policy.</li>
+            </ul>
+          </article>
+        </div>
+        <div class="stat-grid">
+          <article>
+            <p class="metric-label">Average call latency</p>
+            <p class="metric-value">82ms</p>
+            <p class="metric-meta">p95 across integrated venues</p>
+          </article>
+          <article>
+            <p class="metric-label">Semantic mismatch flags</p>
+            <p class="metric-value">0.2%</p>
+            <p class="metric-meta">Auto resolved via schema adapter</p>
+          </article>
+          <article>
+            <p class="metric-label">Async throughput</p>
+            <p class="metric-value">14k/min</p>
+            <p class="metric-meta">ThreadPoolExecutor + asyncio</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="engine" class="section soft">
+        <div class="section-heading">
+          <h2>Arbitrage engine core</h2>
+          <p>Hybrid asyncio orchestration fused with thread pools and ephemeral containers keeps execution deterministic yet fast enough to capture microsecond spreads.</p>
+        </div>
+        <div class="tab-group" data-tab-group>
+          <div class="tab-buttons">
+            <button type="button" class="tab-button active" data-tab-target="triangular">Triangular</button>
+            <button type="button" class="tab-button" data-tab-target="cross">Cross-Exchange</button>
+            <button type="button" class="tab-button" data-tab-target="latency">Latency</button>
+          </div>
+          <div class="tab-panels">
+            <article class="tab-panel active" id="triangular">
+              <h3>Triangular synthesis</h3>
+              <p>Event loop manages quote triangulation across three venues, pipelining book snapshots and validator approvals before executing matched swaps.</p>
+              <ul>
+                <li>Async graph search builds cycle in 17µs median.</li>
+                <li>Per leg simulation verifies slip, fees, and liquidity buffer.</li>
+                <li>Validator narrative: &ldquo;vol-spread relief via stable corridor&rdquo;.</li>
+              </ul>
+            </article>
+            <article class="tab-panel" id="cross">
+              <h3>Cross-venue orchestration</h3>
+              <p>ThreadPoolExecutor dispatches hedged legs into CEX and DEX venues with atomic settlement instructions, fallback hedges, and compliance guardrails.</p>
+              <ul>
+                <li>Auto-maps order templates across exchanges.</li>
+                <li>Risk envelope keyed to GAAP/IFRS control sets.</li>
+                <li>Validator approval ensures narrative-driven exposure.</li>
+              </ul>
+            </article>
+            <article class="tab-panel" id="latency">
+              <h3>Latency arbitrage</h3>
+              <p>Ephemeral container spins, ingests co-located depth feeds, and exits after execution. All steps traced with thread IDs, runtime, and rationale.</p>
+              <ul>
+                <li>Feeds fused from Binance, Kraken, and Coinbase Pro.</li>
+                <li>Execution threshold: validator score &gt; 0.92.</li>
+                <li>IPFS-backed transcript stored upon teardown.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+        <div class="engine-grid">
+          <article class="card">
+            <header>
+              <h3>Semantic triggers</h3>
+            </header>
+            <ul>
+              <li>Trades require validator storyboards with contextual metadata.</li>
+              <li>Rejects missing narrative justification auto-escalate for review.</li>
+              <li>Every branch logs execution time, thread ID, and delta inputs.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Ephemeral compute</h3>
+            </header>
+            <ul>
+              <li>Containers self-destruct after trade, preserving only audit trail.</li>
+              <li>Configurable runtime budgets with compliance locks.</li>
+              <li>Cacheless strategy prevents sensitive state persistence.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Simulation lab</h3>
+            </header>
+            <ul>
+              <li>Replay engine rehydrates past traces for deterministic testing.</li>
+              <li>Scenario composer drafts new validator narratives for approval.</li>
+              <li>Performance dossier exports as IPFS bundle or PDF.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="logging" class="section">
+        <div class="section-heading">
+          <h2>Forensic logging matrix</h2>
+          <p>Trace level instrumentation captures every branch, decision, and retry. Export to append-only ledger or replicate to IPFS.</p>
+        </div>
+        <div class="log-matrix">
+          <div class="log-row log-header">
+            <span>Subsystem</span>
+            <span>Trace content</span>
+            <span>Retention</span>
+            <span>Ledger anchor</span>
+          </div>
+          <div class="log-row">
+            <span>Node provisioning</span>
+            <span>RPC payloads, validator inputs, rejection reasons</span>
+            <span>Rolling 30 days + cold archive</span>
+            <span>IPFS CID + Ledger digest</span>
+          </div>
+          <div class="log-row">
+            <span>Exchange integration</span>
+            <span>API requests, response payloads, latency telemetry</span>
+            <span>Real-time stream + compressed hourly bundles</span>
+            <span>Append-only logbook</span>
+          </div>
+          <div class="log-row">
+            <span>Arbitrage engine</span>
+            <span>Decision paths, input deltas, simulation outputs</span>
+            <span>Immutable ledger copy per trade</span>
+            <span>Chain anchored hash</span>
+          </div>
+          <div class="log-row">
+            <span>Validators</span>
+            <span>Approval verdicts, semantic rationale, policy diff</span>
+            <span>Continuous streaming + 7-day hot buffer</span>
+            <span>Dual vault replication</span>
+          </div>
+        </div>
+        <div class="accordion" data-accordion>
+          <article class="accordion-item">
+            <button class="accordion-trigger" type="button" aria-expanded="false">
+              <span>Runtime disposal protocol</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="accordion-panel" hidden>
+              <p>Execution sandboxes terminate post-trade. Snapshot of logs shipped to ledger before container purge ensuring no runtime residue remains.</p>
+            </div>
+          </article>
+          <article class="accordion-item">
+            <button class="accordion-trigger" type="button" aria-expanded="false">
+              <span>Trace ingestion pipeline</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="accordion-panel" hidden>
+              <p>TRACE-level logs fan out to Kafka, Elastic, and cold storage in parallel. Back-pressure handled via async queue metrics to prevent packet loss.</p>
+            </div>
+          </article>
+          <article class="accordion-item">
+            <button class="accordion-trigger" type="button" aria-expanded="false">
+              <span>Audit replay</span>
+              <span class="icon">+</span>
+            </button>
+            <div class="accordion-panel" hidden>
+              <p>Investigators can replay arbitrage events line-for-line with validator voiceovers, reproduction scripts, and compliance stamps.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="control" class="section soft">
+        <div class="section-heading">
+          <h2>Control interface</h2>
+          <p>Operate through a GNOMAN-style CLI or launch the optional dashboard featuring live arbitrage streams and audit playback.</p>
+        </div>
+        <div class="control-grid">
+          <article class="cli-panel">
+            <header>
+              <h3>CLI shell</h3>
+              <p>Flags cover nodes, tokens, algorithms, and compliance envelopes.</p>
+            </header>
+            <pre><code id="cliCommand">ais exec --node solana --algorithm triangular --tokens SOL/USDC/USDT --trace full --validators quorum</code></pre>
+            <button class="copy-btn" type="button" data-copy="#cliCommand">Copy command</button>
+            <div class="cli-flags">
+              <p><strong>Flags</strong> — <code>--trace</code>, <code>--validators</code>, <code>--compliance</code>, <code>--budget</code>, <code>--dry-run</code></p>
+            </div>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Dashboard modules</h3>
+            </header>
+            <ul>
+              <li>Real-time arbitrage map across supported venues.</li>
+              <li>Validator verdict ticker with semantic insights.</li>
+              <li>Audit viewer with timeline scrubbing and log diff export.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <header>
+              <h3>Compliance lattice</h3>
+            </header>
+            <ul>
+              <li>GAAP/IFRS aligned journaling ready for CFO approval.</li>
+              <li>Internal control gates enforce segregation of duties.</li>
+              <li>Hardware wallet &amp; HSM integration for signing workflows.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="engage" class="section">
+        <div class="section-heading">
+          <h2>Engage the build</h2>
+          <p>Share your objectives and we will scaffold the Python module with logging hooks, validator stubs, and deployment scripts.</p>
+        </div>
+        <form class="contact" id="contactForm">
+          <div class="form-grid">
             <label>
               <span>Name</span>
-              <input type="text" name="name" placeholder="Jordan Rivera" required />
+              <input type="text" name="name" placeholder="Ada Lovelace" required />
             </label>
             <label>
               <span>Email</span>
-              <input type="email" name="email" placeholder="you@email.com" required />
+              <input type="email" name="email" placeholder="ada@example.com" required />
             </label>
-            <label>
-              <span>What are we building?</span>
-              <input type="text" name="subject" placeholder="Custom arbitrage integration" />
+            <label class="full">
+              <span>Focus</span>
+              <select name="focus" required>
+                <option value="">Select module</option>
+                <option>Node provisioning</option>
+                <option>Exchange integration</option>
+                <option>Arbitrage engine</option>
+                <option>Logging &amp; audit</option>
+                <option>Control interface</option>
+                <option>Security &amp; compliance</option>
+              </select>
             </label>
-            <label>
-              <span>Project details</span>
-              <textarea name="message" placeholder="Share goals, timeline, and any links you'd like us to review." required></textarea>
+            <label class="full">
+              <span>Directive</span>
+              <textarea name="directive" rows="4" placeholder="Outline your goals, constraints, and go-live expectations"></textarea>
             </label>
-            <button type="submit" class="button primary">Send message</button>
-            <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
-          </form>
-          <div class="card contact-meta">
-            <h3>Collaborate with AES</h3>
-            <p>Share a little about your idea and we’ll reply with open slots plus a tailored next-step guide.</p>
-            <div class="availability">
-              <span class="badge success">Now booking</span>
-              <span>Q4 2025 mainnet launch integrations</span>
-            </div>
-            <ul class="contact-list">
-              <li><a href="mailto:hello@aes.systems">hello@aes.systems</a></li>
-              <li><a href="https://www.linkedin.com" target="_blank" rel="noopener">LinkedIn updates</a></li>
-              <li><a href="https://github.com/74Thirsty" target="_blank" rel="noopener">GitHub repos</a></li>
-            </ul>
-            <div class="contact-note">
-              <span class="badge accent">Office hours</span>
-              <p>Tuesdays &amp; Thursdays · 10:00–13:00 EST · Remote sessions available.</p>
-            </div>
           </div>
-        </div>
+          <button type="submit" class="cta">Schedule strategy call</button>
+          <p id="contactStatus" class="form-status" role="status" aria-live="polite"></p>
+        </form>
       </section>
-    <footer class="site-footer">
-      <p>© 2025 AES. Engineered for autonomous arbitrage execution.</p>
-      <div class="footer-links">
-        <a href="#projects">Projects</a>
-        <a href="#books">Books</a>
-        <a href="#services">Services</a>
-        <a href="#assistant">AI Assistant</a>
-        <a href="#contact">Contact</a>
-      </div>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; <span id="year"></span> AIS Node-Integrated Arbitrage System. All trades require validator-approved narratives.</p>
+      <a href="#top" class="pill ghost">Back to top</a>
     </footer>
   </div>
-
-  <script>
-    const applyMouseGlow = () => {
-      document.querySelectorAll('.card').forEach((card) => {
-        card.addEventListener('mousemove', (event) => {
-          const rect = card.getBoundingClientRect();
-          card.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
-          card.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
-        });
-
-        card.addEventListener('mouseleave', () => {
-          card.style.removeProperty('--mouse-x');
-          card.style.removeProperty('--mouse-y');
-        });
-
-        card.addEventListener('touchmove', (event) => {
-          const touch = event.touches[0];
-          if (!touch) return;
-          const rect = card.getBoundingClientRect();
-          card.style.setProperty('--mouse-x', `${touch.clientX - rect.left}px`);
-          card.style.setProperty('--mouse-y', `${touch.clientY - rect.top}px`);
-        }, { passive: true });
-      });
-    };
-
-    applyMouseGlow();
-
-    if (window.matchMedia('(pointer: fine)').matches) {
-      document.body.addEventListener('pointermove', (event) => {
-        const x = (event.clientX / window.innerWidth) * 100;
-        const y = (event.clientY / window.innerHeight) * 100;
-        document.body.style.setProperty('--pointer-x', `${x}%`);
-        document.body.style.setProperty('--pointer-y', `${y}%`);
-      }, { passive: true });
-    }
-
-    const progressBar = document.querySelector('.scroll-progress span');
-
-    if (progressBar) {
-      const updateProgress = () => {
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = scrollHeight > 0 ? (window.scrollY / scrollHeight) * 100 : 0;
-        const clamped = Math.min(100, Math.max(12, progress));
-        progressBar.style.width = `${clamped}%`;
-      };
-      updateProgress();
-      window.addEventListener('scroll', updateProgress, { passive: true });
-      window.addEventListener('resize', updateProgress);
-    }
-
-    const assistantForm = document.getElementById('assistantForm');
-    const assistantLog = document.getElementById('assistantLog');
-
-    if (assistantForm && assistantLog) {
-      const assistantInput = document.getElementById('assistantInput');
-      const assistantButton = assistantForm.querySelector('button[type="submit"]');
-      const fallbackResponses = [
-        "Here’s what I can prep for you next:\n• Capture goals and constraints\n• Draft a systems map\n• Share the first interactive prototype plan.",
-        "I can pull a short brief with scope, timeline, and three pricing routes so you can pick the path that fits.",
-        "Let’s sync your library with the assistant. I’ll package prompts, automations, and launch collateral for an easy start."
-      ];
-      const patterns = [
-        { test: /arbitrage|path|cycle|profit|execution/, response: "AES Copilot: I’ll pull the latest validated arbitrage paths, profit margins, and execution steps for you." },
-        { test: /loan|flashloan|depth|liquidity/, response: "AES Copilot: Here’s the flashloan depth across providers and liquidity metrics relevant to your query." },
-        { test: /service|integration|retainer/, response: "AES Copilot: We can provision forensic logs, custom integrations, or research retainers depending on your needs." },
-        { test: /ai|assistant|copilot|automation/, response: "AES Copilot: I summarize logs, generate execution breakdowns, and help tune your arbitrage strategies in real time." },
-        { test: /price|budget|cost|rate|subscription/, response: "AES Copilot: Forensic log subscriptions and integrations are priced by scope; I’ll draft options for you." }
-      ];
-      let responseIndex = 0;
-      const appendMessage = (role, text) => {
-        const bubble = document.createElement('div');
-        bubble.className = `message ${role}`;
-        bubble.textContent = text;
-        assistantLog.appendChild(bubble);
-        assistantLog.scrollTop = assistantLog.scrollHeight;
-      };
-      const generateResponse = (input) => {
-        const normalized = input.toLowerCase();
-        for (const pattern of patterns) {
-          if (pattern.test(normalized)) {
-            return pattern.response;
-          }
-        }
-        const reply = fallbackResponses[responseIndex % fallbackResponses.length];
-        responseIndex += 1;
-        return reply;
-      };
-      const defaultLabel = assistantButton ? assistantButton.textContent : '';
-      assistantForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const value = assistantInput.value.trim();
-        if (!value) return;
-        appendMessage('user', value);
-        assistantInput.value = '';
-        if (assistantButton) {
-          assistantButton.disabled = true;
-          assistantButton.textContent = 'Thinking…';
-        }
-        setTimeout(() => {
-          appendMessage('bot', generateResponse(value));
-          if (assistantButton) {
-            assistantButton.disabled = false;
-            assistantButton.textContent = defaultLabel;
-          }
-          assistantInput.focus();
-        }, 550 + Math.random() * 450);
-      });
-    }
-
-    const contactForm = document.getElementById('contactForm');
-    const contactStatus = document.getElementById('contactStatus');
-    if (contactForm && contactStatus) {
-      let statusTimeout;
-      contactForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const formData = new FormData(contactForm);
-        const rawName = (formData.get('name') || '').toString().trim();
-        const friendlyName = rawName ? rawName.split(' ')[0] : 'friend';
-        contactStatus.textContent = `Thanks ${friendlyName}! We’ll reply within one business day.`;
-        contactStatus.classList.add('visible');
-        clearTimeout(statusTimeout);
-        statusTimeout = setTimeout(() => {
-          contactStatus.classList.remove('visible');
-        }, 8000);
-        contactForm.reset();
-      });
-    }
-  </script>
+  <script src="scripts/scripts.js" type="module"></script>
 </body>
 </html>
-
